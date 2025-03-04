@@ -6,51 +6,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Learn expert tips to reduce your loan interest and save money. Use our EMI calculator to plan your finances wisely and get the best loan deals.">
     <link rel="icon" type="image/png" href="favicon.ico">
-    <title>EMI Calculator & Articles</title>
+    <title>Loan EMI & Prepayment Calculator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
         }
-        .calculator, .container {
+        .container {
+            max-width: 700px;
+            margin: auto;
             background: #fff;
             padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 320px;
-            max-width: 800px;
-            margin: 20px auto;
         }
-        .calculator h2, h1 {
-            text-align: center;
+        h2 {
             color: #333;
         }
-        .calculator input[type="number"] {
-            width: 93%;
+        input {
+            width: 95%;
             padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+            margin: 8px 0;
             border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
         }
-        .calculator button {
-            width: 100%;
+        button {
+            width: 48%;
             padding: 10px;
-            background: #28a745;
+            margin: 10px 1%;
+            font-size: 16px;
             color: #fff;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
+            border-radius: 5px;
         }
-        .calculator button:hover {
-            background: #218838;
+        .btn-emi {
+            background: #28a745;
         }
-        .result {
-            text-align: center;
-            margin-top: 15px;
+        .btn-prepay {
+            background: #dc3545;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .result-box {
+            font-size: 18px;
+            margin-top: 10px;
             font-weight: bold;
             color: #333;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
         .article {
             margin-bottom: 30px;
@@ -59,13 +82,20 @@
         }
         .article h2 {
             color: #333;
+            margin-top: 50px;
+        }
+        .article ul {
+            text-align: left;
         }
         .article p {
             line-height: 1.6;
             color: #555;
+            margin-left: 20px;
+            text-align: left;
         }
         .article img {
-            width: 100%;
+            width: 50%;
+            height: 50%;
             border-radius: 10px;
             margin: 10px 0;
         }
@@ -85,51 +115,176 @@
         .read-more:hover {
             background: #0056b3;
         }
+        .highlight-row {
+            background-color: yellow !important;
+            font-weight: bold;
+        }
+        .prepay-section {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <!-- EMI Calculator Section -->
-    <div class="calculator">
-        <h2>EMI & Interest Calculator</h2>
-        <input type="number" id="principal" placeholder="Loan Amount (P)" required>
-        <input type="number" id="rate" placeholder="Interest Rate (%)" required>
-        <input type="number" id="tenure" placeholder="Tenure (Years)" required>
-        <button onclick="calculateEMI()">Calculate EMI</button>
-        <div class="result" id="emiResult"></div>
-        <div class="result" id="interestResult"></div>
-        <div class="result" id="totalPaymentResult"></div>
+    <div class="container">
+        <h2>Loan EMI & Prepayment Calculator</h2>
+        <label>Loan Amount (₹):</label>
+        <input type="number" id="loanAmount">
+        
+        <label>Interest Rate (% per annum):</label>
+        <input type="number" id="interestRate">
+        
+        <label>Tenure (Years):</label>
+        <input type="number" id="loanTenure">
+
+        <button class="btn-emi" onclick="calculateEMI()">Calculate EMI</button>
+        
+        <div class="result-box" id="emiResult"></div>
+        <div class="result-box" id="totalInterest"></div>
+        <div class="result-box" id="totalAmount"></div>
+
+        <h3>Prepayment Details</h3>
+        <label>Prepayment Amount (₹):</label>
+        <input type="number" id="prepaymentAmount">
+        
+        <label>Prepayment After (Months):</label>
+        <input type="number" id="prepaymentMonth">
+        
+        <button class="btn-prepay" onclick="applyPrepayment()">Apply Prepayment</button>
+
+        <div class="result-box" id="interestSaved"></div>
+        <div class="result-box" id="newTenureResult"></div>
+        <div class="result-box" id="tenurereducedby"></div>
+
+        <h2>Loan Amortization Schedule</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Opening Balance</th>
+                    <th>EMI</th>
+                    <th>Principal</th>
+                    <th>Interest</th>
+                    <th>Closing Balance</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody"></tbody>
+        </table>
+
+        <div class="prepay-section">
+            <h2>Updated Loan Breakdown (After Prepayment)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Opening Balance</th>
+                        <th>EMI</th>
+                        <th>Principal</th>
+                        <th>Interest</th>
+                        <th>Closing Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="prepayScheduleBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        function calculateEMI() {
-            var principal = parseFloat(document.getElementById("principal").value);
-            var rate = parseFloat(document.getElementById("rate").value);
-            var tenure = parseFloat(document.getElementById("tenure").value);
+        let globalLoanAmount, globalInterestRate, globalLoanTenure, globalEMI, prepaymentMonth, totalInterestPaid;
 
-            if (isNaN(principal) || isNaN(rate) || isNaN(tenure) || principal <= 0 || rate <= 0 || tenure <= 0) {
-                document.getElementById("emiResult").innerHTML = "Please enter valid inputs.";
-                document.getElementById("interestResult").innerHTML = "";
-                document.getElementById("totalPaymentResult").innerHTML = "";
-                return;
+        function calculateEMI() {
+            let loanAmount = parseFloat(document.getElementById("loanAmount").value);
+            let interestRate = parseFloat(document.getElementById("interestRate").value) / 100 / 12;
+            let loanTenure = parseInt(document.getElementById("loanTenure").value) * 12;
+
+            globalLoanAmount = loanAmount;
+            globalInterestRate = interestRate;
+            globalLoanTenure = loanTenure;
+
+            globalEMI = (loanAmount * interestRate * Math.pow(1 + interestRate, loanTenure)) / (Math.pow(1 + interestRate, loanTenure) - 1);
+            totalInterestPaid = (globalEMI * loanTenure) - loanAmount;
+
+            document.getElementById("emiResult").innerHTML = "EMI: ₹" + globalEMI.toFixed(2);
+            document.getElementById("totalInterest").innerHTML = "Total Interest: ₹" + totalInterestPaid.toFixed(2);
+            document.getElementById("totalAmount").innerHTML = "Total Amount Payable: ₹" + (loanAmount + totalInterestPaid).toFixed(2);
+
+            generateAmortizationTable(loanAmount, interestRate, loanTenure, globalEMI, "scheduleBody");
+        }
+
+        function generateAmortizationTable(balance, interestRate, loanTenure, emi, tableId, prepayMonth) {
+            let scheduleBody = document.getElementById(tableId);
+            scheduleBody.innerHTML = "";
+
+            for (let month = 1; month <= loanTenure; month++) {
+                let interest = balance * interestRate;
+                let principal = emi - interest;
+                balance -= principal;
+                if (balance < 0) balance = 0;
+
+                let rowHTML = `<tr class="${month === prepayMonth ? 'highlight-row' : ''}">
+                    <td>${month}</td>
+                    <td>₹${(balance + principal).toFixed(2)}</td>
+                    <td>₹${emi.toFixed(2)}</td>
+                    <td>₹${principal.toFixed(2)}</td>
+                    <td>₹${interest.toFixed(2)}</td>
+                    <td>₹${balance.toFixed(2)}</td>
+                </tr>`;
+                scheduleBody.innerHTML += rowHTML;
+
+                if (balance <= 0) break;
+            }       
+        }
+
+        function applyPrepayment() {
+            let prepaymentAmount = parseFloat(document.getElementById("prepaymentAmount").value);
+            prepaymentMonth = parseInt(document.getElementById("prepaymentMonth").value);
+
+            // Calculate balance and interest paid till prepayment
+            let remainingBalance = globalLoanAmount;
+            let interestPaidTillPrepayment = 0;
+
+            for (let month = 1; month <= prepaymentMonth; month++) {
+                let interest = remainingBalance * globalInterestRate;
+                let principal = globalEMI - interest;
+                remainingBalance -= principal;
+                interestPaidTillPrepayment += interest;
             }
 
-            var monthlyRate = (rate / 100) / 12;
-            var numberOfMonths = tenure * 12;
-            var emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfMonths)) / 
-                      (Math.pow(1 + monthlyRate, numberOfMonths) - 1);
+            // Apply prepayment
+            remainingBalance -= prepaymentAmount;
 
-            var totalPayment = emi * numberOfMonths;
-            var totalInterest = totalPayment - principal;
+            // Calculate new tenure
+            let newTenure = Math.log(globalEMI / (globalEMI - remainingBalance * globalInterestRate)) / Math.log(1 + globalInterestRate);
+            let roundedNewTenure = Math.ceil(newTenure);
 
-            emi = emi.toFixed(2);
-            totalPayment = totalPayment.toFixed(2);
-            totalInterest = totalInterest.toFixed(2);
+            // Calculate interest to be paid after prepayment
+            let newRemainingBalance = remainingBalance;
+            let interestToBePaidAfterPrepayment = 0;
 
-            document.getElementById("emiResult").innerHTML = "Monthly EMI: ₹" + emi;
-            document.getElementById("interestResult").innerHTML = "Total Interest Payable: ₹" + totalInterest;
-            document.getElementById("totalPaymentResult").innerHTML = "Total Payment (Principal + Interest): ₹" + totalPayment;
+            for (let month = 1; month <= roundedNewTenure; month++) {
+                let interest = newRemainingBalance * globalInterestRate;
+                let principal = globalEMI - interest;
+                newRemainingBalance -= principal;
+                interestToBePaidAfterPrepayment += interest;
+            }
+
+            // Corrected Interest Saved Calculation
+            let interestSaved = totalInterestPaid - (interestPaidTillPrepayment + interestToBePaidAfterPrepayment);
+            let tenurereducedby = globalLoanTenure - (prepaymentMonth + roundedNewTenure);
+
+            // Display results
+            document.getElementById("interestSaved").innerHTML = `Interest Saved: ₹${interestSaved.toFixed(2)}`;
+            document.getElementById("newTenureResult").innerHTML = `New Tenure: ${roundedNewTenure} months`;
+
+            document.getElementById("tenurereducedby").innerHTML = `Tenure reduced by: ${tenurereducedby} months`;
+            // Show prepayment section
+            document.querySelector(".prepay-section").style.display = "block";
+
+            // Generate updated amortization schedule
+            generateAmortizationTable(globalLoanAmount, globalInterestRate, globalLoanTenure, globalEMI, "scheduleBody", prepaymentMonth);
+            generateAmortizationTable(remainingBalance, globalInterestRate, roundedNewTenure, globalEMI, "prepayScheduleBody", -1);
         }
+
     </script>
 
     <!-- Articles Section -->
@@ -223,6 +378,5 @@
         </div>
 
     </div>
-
 </body>
 </html>
